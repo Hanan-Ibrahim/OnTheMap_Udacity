@@ -15,8 +15,16 @@ class TableViewController: UITableViewController {
     @IBAction func addPin(_ sender: Any) {
         let viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "PinViewController") as! PinViewController
         self.present(viewController, animated: true, completion: nil)
-        
     }
+    @IBAction func logOutButton(_ sender: Any) {
+        UdacityStudent.logout(completion: {
+            StudentsInformation.data = []
+             let viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "SignInViewController") as! SignInViewController
+             self.present(viewController, animated: true, completion: nil)
+            
+        })
+    }
+    
     @objc func updateStudentsInfromation(_ notification: Notification) {
         // DispatchQueue.main.async is an object that manages the execution
         // of tasks serially or concurrently on your app's main thread

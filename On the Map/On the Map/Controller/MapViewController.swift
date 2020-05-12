@@ -10,21 +10,32 @@ import UIKit
 import MapKit
 
 class MapViewController: UIViewController {
-
-        
+    
+    //  MARK:- Variables
     @IBOutlet var mapView: MKMapView!
-    
     @IBOutlet var addressTextField: UITextField!
-    
     @IBOutlet var submitButton: UIButton!
-
-    
     @IBOutlet var activityIndicator: UIActivityIndicatorView!
     var newAnnotation = MKPointAnnotation()
     
+    @IBAction func addPin(_ sender: Any) {
+        let viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "PinViewController") as! PinViewController
+        self.present(viewController, animated: true, completion: nil)
+    }
+    @IBAction func logOutButton(_ sender: Any) {
+        // Empty the student Infromation list
+        
+        //Post a Notification that the app is logging out so observers can unsubscribe
+        //NotificationCenter.default.post(name: Notification.Name(rawValue: "logout"), object: nil)
+        UdacityStudent.logout(completion: {
+            StudentsInformation.data = []
+             let viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "SignInViewController") as! SignInViewController
+             self.present(viewController, animated: true, completion: nil)
+            
+        }) }
+    //  MARK:- MapView Life Cycle
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        configureUI()
         self.mapView.removeAnnotations(self.mapView.annotations)
         mapView.delegate = self
         addressTextField.delegate = self
@@ -37,7 +48,12 @@ class MapViewController: UIViewController {
     }
 
     
-    // MARK: Unwind Segue Triggered when user return from AddPinViewController
+    @IBAction func submit(_ sender: Any) {
+                     let viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "PinViewController") as! PinViewController
+        self.present(viewController, animated: true, completion: nil)
+        
+    }
+    // Unwind Segue goes back to controller that was previously seen
     @IBAction func unwindToTab(unwindSegue: UIStoryboardSegue) {
         if let addPinViewController = unwindSegue.source as? PinViewController {
             guard addPinViewController.placeSelected != "" else{
@@ -94,7 +110,6 @@ class MapViewController: UIViewController {
         }
     }
     
-    // MARK: If the student information can't be found ignore posting the new Pin Location
     func handleUserData(userData: UserData?, error: Error?){
         guard error == nil else{
             displayErrorAlert(title: "Error", message: "Can't retrieve account information")
@@ -103,96 +118,45 @@ class MapViewController: UIViewController {
         
         StudentLocation.instance?.firstName = userData!.firstName
         StudentLocation.instance?.lastName = userData!.lastName
-        
-        // Disable Navigationbar and Tabbar when waiting for the user to enter URL
-        enteringURL(true)
     }
-    
-    // MARK: Save the URL and POST the New Student Location
+    // Save the URL and POST the New Student Location
     
     @IBAction func submitButtonTapped(_ sender: Any) {
-        // Enable Navigationbar and Tabbar
-        enteringURL(false)
-        
+
         StudentLocation.instance?.mediaURL = addressTextField.text ?? ""
-        
         UdacityStudent.postStudentLocation(studentLocation: StudentLocation.instance!){ error in
             
             guard error == nil else{
                 self.displayErrorAlert(title:"Error", message: "Can't Post New Location")
                 return
             }
-            
-            
-            // Display new PinMarker with the URL
             self.mapView.removeAnnotation(self.newAnnotation)
             self.newAnnotation.title = "\(StudentLocation.instance!.firstName) \(StudentLocation.instance!.lastName)"
             self.newAnnotation.subtitle = StudentLocation.instance!.mediaURL
             self.mapView.addAnnotation(self.newAnnotation)
         }
     }
+    
 }
 
 
 extension MapViewController: MKMapViewDelegate, UITextFieldDelegate{
 
-    func configureUI(){
-        addressTextField.isHidden = true
-        // Change corners to be round
-        addressTextField.layer.borderWidth = 2.0
-        addressTextField.layer.masksToBounds = true
-        addressTextField.layer.borderColor =  UIColor(white: 1.0, alpha: 0).cgColor
-        addressTextField.layer.backgroundColor =  UIColor(white: 0, alpha: 0.2).cgColor
-        
-        
-        submitButton.layer.cornerRadius = 25
-        submitButton.layer.borderWidth = 2.0
-        submitButton.layer.masksToBounds = true
-        submitButton.layer.borderColor =  UIColor(white: 1.0, alpha: 0).cgColor
-        
-    
-    }
-    
-    // MARK: Hides KeyBoard after Returning from Editing Text Field
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        self.view.endEditing(true)
-        return false
-    }
-    
-    // MARK: Disable Navigationbar and Tabbar when waiting for the user to enter URL
-    func enteringURL(_ state: Bool){
-        if state{
-            self.addressTextField.isHidden = false
-            navigationController?.isNavigationBarHidden = true
-            tabBarController?.tabBar.isHidden = true
-            
-        }else{
-            self.addressTextField.isHidden = true
-            navigationController?.isNavigationBarHidden = false
-            tabBarController?.tabBar.isHidden = false;
-            
-        }
-    }
-    
-    // MARK: Subscribe to tabController notifications
     func subscribe(){
         NotificationCenter.default.addObserver(self, selector: #selector(updateStudentsInfromation(_:)), name: Notification.Name(rawValue: "updateStudentsInfromation"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(unsubscribe(_:)), name: Notification.Name(rawValue: "logout"), object: nil)
     }
     
-    // MARK: Unsubscribe to tabController notifications
     @objc func unsubscribe(_ notification: Notification){
         NotificationCenter.default.removeObserver(self, name: Notification.Name(rawValue:"updateStudentsInfromation"), object: nil)
         NotificationCenter.default.removeObserver(self, name: Notification.Name(rawValue:"logout"), object: nil)
     }
     
-    // MARK: Update User Student Information on the Map
     @objc func updateStudentsInfromation(_ notification: Notification) {
         setupMap()
         self.mapView.reloadInputViews()
     }
     
-    // MARK: Extract the information for every student and update annotation list
     func setupMap(){
         var annotations = [MKPointAnnotation]()
         
@@ -219,7 +183,7 @@ extension MapViewController: MKMapViewDelegate, UITextFieldDelegate{
         self.mapView.addAnnotations(annotations)
     }
     
-    // MARK: Update and Display PinMarker
+   
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
         let reuseId = "pin"
         
@@ -255,5 +219,40 @@ extension MapViewController: MKMapViewDelegate, UITextFieldDelegate{
             }
         }
     }
+    
+   func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+         textField.resignFirstResponder()
+         return true
+     }
+     
+     @objc func keyboardWillShow(_ notification:Notification) {
+         if addressTextField.isFirstResponder && view.frame.origin.y == 0 {
+             view.frame.origin.y -= getKeyboardHeight(notification)
+         }
+
+     }
+     
+     func subscribeToKeyboardNotifications() {
+         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: UIResponder.keyboardWillShowNotification , object: nil)
+         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(_:)), name: UIResponder.keyboardWillHideNotification, object: nil)
+     }
+     
+     @objc func keyboardWillHide(_ notification:Notification) {
+         if addressTextField.isFirstResponder && view.frame.origin.y != 0  {
+             view.frame.origin.y = 0
+         }
+     }
+     
+     func unsubscribeFromKeyboardNotifications() {
+         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
+         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
+     }
+     
+     func getKeyboardHeight(_ notification:Notification) -> CGFloat {
+         
+         let userInfo = notification.userInfo
+         let keyboardSize = userInfo![UIResponder.keyboardFrameEndUserInfoKey] as! NSValue // of CGRect
+         return keyboardSize.cgRectValue.height
+     }
     
 }

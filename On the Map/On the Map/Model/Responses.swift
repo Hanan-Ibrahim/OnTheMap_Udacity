@@ -8,7 +8,6 @@
 
 import Foundation
 
-// MARK: Response Template when user is found
 struct LoginResponse: Codable{
     let account: Account
     let session: Session
@@ -24,7 +23,6 @@ struct Session: Codable{
     let expiration: String
 }
 
-// MARK: Response Template when user not found
 struct ErrorResponse: Codable{
     let status: Int
     let error: String

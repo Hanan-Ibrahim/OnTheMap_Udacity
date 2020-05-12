@@ -12,9 +12,7 @@ import UIKit
 class PinViewController: UIViewController, UITextFieldDelegate {
     
     @IBOutlet weak var addressTextField: UITextField!
-    
     @IBOutlet var findButton: UIButton!
-    
     var placeSelected: String = ""
     
     override func viewWillAppear(_ animated: Bool) {
@@ -25,17 +23,16 @@ class PinViewController: UIViewController, UITextFieldDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
     }
-    
-    // MARK: Hides KeyBoard after Returning from Editing Text Field
+
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         self.view.endEditing(true)
         return false
     }
     
-
-    // MARK: Save entered Text and return to MapViewController
+    // Save entered Text and return to MapViewController
     @IBAction func returnToTabController(_ sender: Any) {
         placeSelected = addressTextField.text ?? ""
-        self.performSegue(withIdentifier: "MapViewControllerController", sender: self)
+       let viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "TabViewController") as! TabViewController
+       self.present(viewController, animated: true, completion: nil)
     }
 }
