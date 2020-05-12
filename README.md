@@ -3,4 +3,4 @@ The On The Map app allows users to share their location and a URL with their fel
 
  <br /> 
 # OnTheMap_Udacity Snapshots
-<img src="photos/signin.PNG" width="230"/> <img src="photos/signup.PNG" width="225"/><img src="photos/mapview.PNG" width="225"/> <img src="photos/tableview.PNG" width="225"/> <img src="photos/addloc.PNG" width="450"/> 
+<img src="photos/signin.PNG" width="230"/> <img src="photos/signup.PNG" width="225"/><img src="photos/mapview.PNG" width="225"/> <img src="photos/tableview.PNG" width="225"/> <img src="photos/addloc.PNG" width="225"/> 
