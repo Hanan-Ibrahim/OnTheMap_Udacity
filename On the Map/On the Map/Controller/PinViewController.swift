@@ -32,7 +32,9 @@ class PinViewController: UIViewController, UITextFieldDelegate {
     // Save entered Text and return to MapViewController
     @IBAction func returnToTabController(_ sender: Any) {
         placeSelected = addressTextField.text ?? ""
-       let viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "TabViewController") as! TabViewController
-       self.present(viewController, animated: true, completion: nil)
+  //     let viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "TabViewController") as! TabViewController
+//       self.present(viewController, animated: true, completion: nil)
+
+        self.performSegue(withIdentifier: "unwindToTabController", sender: self)
     }
 }
